@@ -1,0 +1,24 @@
+[project]
+name = "sparse-field-reconstruction"
+version = "0.1.0"
+description = "Reconstruction of 2D flow fields from sparse point sensors on AirfRANS"
+requires-python = ">=3.10"
+dependencies = [
+    "airfrans",
+    "pyvista",
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

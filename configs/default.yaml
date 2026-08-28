@@ -1,0 +1,17 @@
+seed: 0
+
+data:
+  root: data/raw/Dataset
+  cache: data/grid_128
+  task: scarce
+  n: 128
+  box: [-0.5, 1.5, -1.0, 1.0]
+  u_key: U
+  p_key: p
+
+sensors:
+  fracs: [0.05, 0.015, 0.001]
+
+pod:
+  modes: [8, 16, 32, 64, 128]
+  ridge: 1.0e-6
