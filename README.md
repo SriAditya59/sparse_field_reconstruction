@@ -20,18 +20,18 @@ Relative L2 error, median over 200 test cases, interquartile range in brackets. 
 
 | sensors | fraction | voronoi |
 |---|---|---|
-| 782 | 5% | 0.096 [0.087, 0.126] |
-| 235 | 1.5% | 0.196 [0.178, 0.261] |
-| 16 | 0.1% | 0.373 [0.341, 0.486] |
+| 781 | 5% | 0.098 [0.087, 0.140] |
+| 234 | 1.5% | 0.141 [0.125, 0.205] |
+| 16 | 0.1% | 0.408 [0.372, 0.557] |
 
-Cutting sensors by 49x, from 782 to 16, costs a factor 3.9 in error. Reconstruction takes
-under 0.02 s per case at every fraction.
+Cutting sensors by 49x, from 781 to 16, costs a factor 4.2 in error. Reconstruction takes
+under 0.01 s per case at every fraction.
 
 ## Where it loses
 
-At 16 sensors the median error is 0.373, so a third of every field is unrecovered, and the
-IQR spans 0.341 to 0.486 — the spread across cases is 40% of the error itself. A single
-sensor landing near the suction peak or not is worth more than the method.
+At 16 sensors the median error is 0.408, so nearly half of every field is unrecovered, and
+the IQR spans 0.372 to 0.557 — the spread across cases is nearly half the error itself. A
+single sensor landing near the suction peak or not is worth more than the method.
 
 Nearest-sensor distance is Euclidean in grid space and ignores the airfoil, so a point below
 the trailing edge can be assigned a sensor from the suction side, across the body. A
@@ -44,8 +44,8 @@ different unstructured mesh, so every case is interpolated once onto a shared 12
 over `x in [-0.5, 1.5]`, `y in [-1.0, 1.0]`. The mesh sits on the plane z=0.5; the grid
 follows it.
 
-Every method is evaluated on one common mask: the 15,637 grid points valid in all 400
-train and test cases, with 747 points masked because at least one airfoil covers them. A
+Every method is evaluated on one common mask: the 15,623 grid points valid in all 1000
+train and test cases, with 761 points masked because at least one airfoil covers them. A
 fixed point set is required by gappy POD (fixed basis support), the decoder (fixed output
 dimension), and QR pivoting (one global sensor set). It costs the near-wall band that only
 some airfoils leave uncovered — which is exactly where reconstruction error concentrates,
@@ -72,6 +72,10 @@ produces one global set by construction. The per-case random protocol is still a
 Placement is one permutation, prefixes taken for each fraction, so the 0.1% set is a subset
 of the 1.5% set is a subset of the 5% set and differences between fractions are sensor count
 and not placement luck. Sensor locations are identical across methods at a given fraction.
+
+The global set is redrawn whenever the common mask changes: adding the 600 extra full_train
+airfoils dropped 14 points and moved the 1.5% median from 0.196 to 0.141. Absolute errors
+are that sensitive to which points are picked, so only compare methods, never runs.
 
 ## Reproducing
 
