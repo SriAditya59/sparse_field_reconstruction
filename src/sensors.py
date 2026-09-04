@@ -18,6 +18,15 @@ def place(mask, fracs, rng):
     return out
 
 
+# The decoder needs input element k to mean one fixed location, and QR produces
+# one global sensor set by construction. Neither can use per-case placement, so
+# sensors are placed once over the common mask with a single RNG. The nesting
+# rule is the same as place, so the body is shared.
+def place_global(common, fracs, rng):
+    """Nested sensor sets placed once on the common mask, shared by every case."""
+    return place(common, fracs, rng)
+
+
 def to_mask(idx, shape):
     """Boolean (n, n) mask that is True at the given flat sensor indices."""
     m = np.zeros(int(np.prod(shape)), dtype=bool)

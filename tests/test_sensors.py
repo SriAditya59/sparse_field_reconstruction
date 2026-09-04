@@ -17,6 +17,15 @@ def test_sets_are_nested():
     assert set(small) <= set(mid) <= set(big)
 
 
+def test_global_sets_are_nested():
+    common = make_mask()
+    sets = sensors.place_global(common, [0.05, 0.015, 0.001], np.random.default_rng(0))
+    big, mid, small = sets[0.05], sets[0.015], sets[0.001]
+    assert set(small) <= set(mid) <= set(big)
+    assert len(small) < len(mid) < len(big)
+    assert common.ravel()[big].all()
+
+
 def test_sensors_avoid_mask_and_are_reproducible():
     mask = make_mask()
     a = sensors.place(mask, [0.05], case_rng(0, "case_x"))[0.05]
