@@ -20,17 +20,17 @@ Relative L2 error, median over 200 test cases, interquartile range in brackets. 
 
 | sensors | fraction | voronoi |
 |---|---|---|
-| 792 | 5% | 0.139 [0.115, 0.167] |
-| 238 | 1.5% | 0.217 [0.181, 0.256] |
-| 16 | 0.1% | 0.496 [0.420, 0.571] |
+| 782 | 5% | 0.096 [0.087, 0.126] |
+| 235 | 1.5% | 0.196 [0.178, 0.261] |
+| 16 | 0.1% | 0.373 [0.341, 0.486] |
 
-Cutting sensors by 50x, from 792 to 16, costs a factor 3.6 in error. Reconstruction takes
-under 0.05 s per case at every fraction.
+Cutting sensors by 49x, from 782 to 16, costs a factor 3.9 in error. Reconstruction takes
+under 0.02 s per case at every fraction.
 
 ## Where it loses
 
-At 16 sensors the median error is 0.496, so half of every field is unrecovered, and the
-IQR spans 0.420 to 0.571 — the spread across cases is a third of the error itself. A single
+At 16 sensors the median error is 0.373, so a third of every field is unrecovered, and the
+IQR spans 0.341 to 0.486 — the spread across cases is 40% of the error itself. A single
 sensor landing near the suction peak or not is worth more than the method.
 
 Nearest-sensor distance is Euclidean in grid space and ignores the airfoil, so a point below
@@ -41,11 +41,18 @@ geodesic distance would fix it and would stop this being the trivial baseline.
 
 [AirfRANS](https://airfrans.readthedocs.io), `scarce` task, 200 test cases. Each case is a
 different unstructured mesh, so every case is interpolated once onto a shared 128x128 grid
-over `x in [-0.5, 1.5]`, `y in [-1.0, 1.0]`, leaving 15,847 valid points and 537 masked by
-the airfoil. The mesh sits on the plane z=0.5; the grid follows it.
+over `x in [-0.5, 1.5]`, `y in [-1.0, 1.0]`. The mesh sits on the plane z=0.5; the grid
+follows it.
 
-The common grid costs near-wall resolution, which is where the error concentrates.
-Reconstruction on the native unstructured mesh is separate work and is not done here.
+Every method is evaluated on one common mask: the 15,637 grid points valid in all 400
+train and test cases, with 747 points masked because at least one airfoil covers them. A
+fixed point set is required by gappy POD (fixed basis support), the decoder (fixed output
+dimension), and QR pivoting (one global sensor set). It costs the near-wall band that only
+some airfoils leave uncovered — which is exactly where reconstruction error concentrates,
+so the common-mask numbers above sit below the per-case numbers this repo reported before.
+
+The common grid costs near-wall resolution on top of that. Reconstruction on the native
+unstructured mesh is separate work and is not done here.
 
 ## Metric
 
@@ -56,10 +63,15 @@ mean and hide the typical behaviour.
 
 ## Sensor placement
 
-Uniform random over valid grid points, one permutation per case, prefixes taken for each
-fraction. The 0.1% set is a subset of the 1.5% set is a subset of the 5% set, so differences
-between fractions are sensor count and not placement luck. Sensor locations are identical
-across methods for a given case and fraction. Seed is fixed per case from the case name.
+Sensors are placed once on the common mask with a single RNG (`global` placement), so every
+case is reconstructed from sensors at identical locations. This is required by the learned
+decoder, whose input element k must always mean the same point, and by QR pivoting, which
+produces one global set by construction. The per-case random protocol is still available as
+`--placement per_case` and reproduces the earlier numbers.
+
+Placement is one permutation, prefixes taken for each fraction, so the 0.1% set is a subset
+of the 1.5% set is a subset of the 5% set and differences between fractions are sensor count
+and not placement luck. Sensor locations are identical across methods at a given fraction.
 
 ## Reproducing
 
@@ -68,6 +80,7 @@ pip install -e .
 python -c "import airfrans as af; af.dataset.download(root='data/raw', unzip=True, OpenFOAM=False)"
 python scripts/build_cache.py --split test
 python scripts/build_cache.py --split train
+python scripts/build_common_mask.py
 python -m src.run --methods voronoi
 python scripts/plot_error.py
 ```
