@@ -10,3 +10,6 @@ figures/*.png
 
 PROJECT_A_CONTEXT.md
 .vscode/
+
+!figures/ground_truth.png
+!figures/error_vs_fraction.png
