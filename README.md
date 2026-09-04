@@ -77,6 +77,14 @@ The global set is redrawn whenever the common mask changes: adding the 600 extra
 airfoils dropped 14 points and moved the 1.5% median from 0.196 to 0.141. Absolute errors
 are that sensitive to which points are picked, so only compare methods, never runs.
 
+## POD basis
+
+Economy SVD of the 800 full_train snapshots on the common mask, each field centred and
+divided by its own training std (461 for `p`, 19 for `u`); without that the basis is
+essentially all pressure. Eight modes capture 99.9% of the normalised variance and mode 1
+alone captures 64%. The fields are low-rank in Re and angle of attack, so gappy POD is not
+mode-count limited except at 0.1% coverage, where modes are capped at the sensor count.
+
 ## Reproducing
 
 ```
@@ -85,6 +93,7 @@ python -c "import airfrans as af; af.dataset.download(root='data/raw', unzip=Tru
 python scripts/build_cache.py --split test
 python scripts/build_cache.py --split train --task full
 python scripts/build_common_mask.py
+python scripts/build_basis.py
 python -m src.run --methods voronoi
 python scripts/plot_error.py
 ```
