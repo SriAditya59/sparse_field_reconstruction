@@ -79,7 +79,7 @@ and not placement luck. Sensor locations are identical across methods at a given
 pip install -e .
 python -c "import airfrans as af; af.dataset.download(root='data/raw', unzip=True, OpenFOAM=False)"
 python scripts/build_cache.py --split test
-python scripts/build_cache.py --split train
+python scripts/build_cache.py --split train --task full
 python scripts/build_common_mask.py
 python -m src.run --methods voronoi
 python scripts/plot_error.py

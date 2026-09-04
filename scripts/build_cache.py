@@ -9,13 +9,17 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default="configs/default.yaml")
     ap.add_argument("--split", choices=["train", "test"], default="test")
+    ap.add_argument("--task", choices=["scarce", "full"], default=None)
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--time-only", action="store_true")
     args = ap.parse_args()
 
     cfg = load_config(args.config)
     d = cfg["data"]
-    names = list_names(d["root"], d["task"], train=args.split == "train")[: args.limit]
+    # The training-based methods need the 800 full_train cases, not the 200 the
+    # scarce task ships. --task full targets them; the test split is unaffected.
+    task = args.task or d["task"]
+    names = list_names(d["root"], task, train=args.split == "train")[: args.limit]
     cache = f"{d['cache']}/{args.split}"
 
     if args.time_only:
