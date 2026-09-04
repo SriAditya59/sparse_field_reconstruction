@@ -72,6 +72,23 @@ def load_case(path):
     return d["fields"], d["mask"]
 
 
+def common_mask(cache_dirs):
+    """Logical AND of the per-case mask over every cached case in cache_dirs."""
+    # Each case masks a different airfoil, so the valid grid points differ case to
+    # case. Gappy POD needs one basis support, the decoder one fixed output
+    # dimension, and QR pivoting one global sensor set. All three require the set
+    # of points valid in every case, not the per-case mask. Not a cosmetic change.
+    paths = [p for d in cache_dirs for p in sorted(Path(d).glob("*.npz"))]
+    if not paths:
+        raise SystemExit(f"no cached cases under {list(cache_dirs)}")
+
+    common = None
+    for p in paths:
+        _, mask = load_case(p)
+        common = mask.copy() if common is None else (common & mask)
+    return common
+
+
 def list_names(root, task="scarce", train=True):
     """Case names for one AirfRANS split, without loading any field data."""
     # The scarce task reuses the full task's test set.
